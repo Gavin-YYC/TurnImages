@@ -16,9 +16,7 @@ function Turn( elem, opts ) {
     timingFunction: 'ease-out',   // 动画函数
     imgItem: 'img-item',          // 生成的图片容器类
     autoplay: true,               // 是否自动播放
-    timeout: 10000,               // 每隔多少时间自动翻转
-    pageMargin: 20,               // 页面边缘的距离
-    itemMargin: 20                // 图片边缘的距离
+    timeout: 10000                // 每隔多少时间自动翻转
   };
   this.timer = null;
   this.currentTurn = 0;
@@ -39,20 +37,37 @@ Turn.prototype = {
 
   _setupImages: function () {
     var that = this;
+    var html = '';
     that.images.each(function ( index, img ) {
       var $img = $( img );
-      var div = $('<div class="' + that.options.imgItem + '"></div>');
       var originPic = $img.prop('src');
       var backPic = $img.prop('alt');
-      div.html(
-        '<div class="img img-origin" style="background-image: url(' + originPic + ')"></div>' +
-        '<div class="img img-back" style="background-image: url(' + backPic + ')"></div>'
-      );
+
+      var image_origin = new Image();
+      var image_back = new Image();
+      image_origin.src = originPic;
+      image_back.src = backPic;
+      image_origin.onload = function ( e ) {
+        that._handlBackgroundSize( index, image_origin.width, image_origin.height, true );
+      }
+      image_back.onload = function () {
+        that._handlBackgroundSize( index, image_back.width, image_back.height, false );
+      }
+      html += '<div class="' + that.options.imgItem + '"><div class="img img-origin" style="background-image: url(' + originPic + ')"></div>' +
+      '<div class="img img-back" style="background-image: url(' + backPic + ')"></div></div>';
       $img.remove();
-      that.imageContainer.append( div );
     });
+    that.imageContainer.append( html );
     that.imgItem = that.imageContainer.find( '.' + that.options.imgItem );
     that._setImagesLayout();
+  },
+
+
+  // 处理背景图片大小拉伸
+  _handlBackgroundSize: function ( index, width, height, isOrigin ) {
+    var ele;
+    $ele = $( this.imgItem[ index ][ isOrigin ? 'firstChild' : 'lastChild' ] );
+    $ele.addClass( width >= height ? 'img-width-big' : 'img-width-small' );
   },
 
 
