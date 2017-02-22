@@ -39,7 +39,7 @@
   fn._setupImages = function () {
     var that = this;
     var html = this._extend.generateHTML();
-    this.imageContainer.append( html );
+    this.imageContainer.append( html ).addClass('transition-' + this.options.transitions);
     this.imgItem = this.imageContainer.find( '.' + that.options.imgItem );
     this._setImagesLayout();
   }
@@ -119,12 +119,13 @@
 (function ( $ ) {
   Turn.transitions.fadeOut = function ( parent ) {
     this.parent = parent;
-    this.currentTurn = 0;
+    this.currentIndex = 0;
+    this.container = this.parent.imageContainer;
   }
   fn = Turn.transitions.fadeOut.prototype;
   fn.generateHTML = function () {
     var that = this;
-    var html = '';
+    var html = '', allHtml = '';
     var count = +this.parent.options.column[0] * +this.parent.options.column[1];
     that.parent.images.each(function ( index, img ) {
       var $img = $( img );
@@ -134,18 +135,27 @@
       newImage.onload = function ( e ) {
         Turn._handlBackgroundSize.call( that.parent, index, newImage.width, newImage.height, true );
       }
-      if ( index % count === 0 ) {
-        html += '<div class="module">';
+      if ( index != 0 && index % count === 0 ) {
+        allHtml += '<div class="module">' + html + '</div>';
+        html = ""
       }
       html += '<div class="' + that.parent.options.imgItem + '"><div class="img img-origin" style="background-image: url(' + picUrl + ')"></div></div>';
-
-      $img.remove();
     });
-    return html;
+    allHtml += '<div class="module">' + html + '</div>';
+    that.parent.images.remove();
+    return allHtml;
   }
   fn.next = function () {
-    this.currentTurn += 0.5;
-    this.parent.imgItem.css('transform', 'rotateY(' + this.currentTurn + 'turn)');
+    var module = this.container.find('.module');
+    var activeClass = 'transition-active';
+    var endClass = 'transition-end';
+    var length = module.length;
+    if ( this.currentIndex >= length ) {
+      this.currentIndex = 0;
+      $( module[ length - 1 ] ).removeClass( activeClass ).addClass( endClass );
+    }
+    $( module[ this.currentIndex - 1 ] ).removeClass( activeClass ).addClass( endClass );
+    $( module[ this.currentIndex++ ] ).addClass( activeClass ).removeClass( endClass );
   }
 })( window.jQuery || window.Zepto );
 

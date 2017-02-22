@@ -1,0 +1,20 @@
+/* 翻转效果 */
+.transition-turn .img-item .img:nth-child(2) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  -webkit-transform: rotateY(-180deg);
+  -moz-transform: rotateY(-180deg);
+  transform: rotateY(-180deg);
+}
+
+/* 渐变过渡效果 */
+.transition-fadeOut .module {
+  width: 100%;
+}
+.transition-fadeOut .img-item {
+  float: left;
+}
