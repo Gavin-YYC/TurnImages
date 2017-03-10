@@ -13,8 +13,30 @@
 
 /* 渐变过渡效果 */
 .transition-fadeOut .module {
+  float: left;
   width: 100%;
 }
 .transition-fadeOut .img-item {
   float: left;
+}
+.transition-fadeOut .transition-active .img-item {
+  -webkit-animation-name: fadeOut;
+  -moz-animation-name: fadeOut;
+  animation-name: fadeOut;
+  animation-fill-mode: both;
+}
+.transition-fadeOut .transition-end .img-item {
+  -webkit-animation-name: none;
+  animation-name: none;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translateX( 0 );
+  }
+  100% {
+    opacity: 0;
+    transform: translateX( 300px );
+  }
 }

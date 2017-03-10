@@ -16,7 +16,7 @@ body {
 }
 .pic-wall {
   display: flex;
-  flex-wrap: wrap;
+  /*flex-wrap: wrap;*/
   -webkit-perspective: 3000px;
   -moz-perspective: 3000px;
   perspective: 3000px;

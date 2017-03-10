@@ -38,8 +38,7 @@
 
   fn._setupImages = function () {
     var that = this;
-    var html = this._extend.generateHTML();
-    this.imageContainer.append( html ).addClass('transition-' + this.options.transitions);
+    this._extend.generateHTML( this.imageContainer );
     this.imgItem = this.imageContainer.find( '.' + that.options.imgItem );
     this._setImagesLayout();
   }
@@ -73,9 +72,19 @@
     var duration  = parseInt( this.options.duration ),
         timingFunction = this.options.timingFunction,
         delay = this._getDelayTime( index );
-    $( elem ).css({
-      transition: 'transform ' + duration + 'ms ' + timingFunction + ' ' + delay + 'ms'
-    });
+
+    var name = this.options.transitions;
+    if ( name == 'fadeOut' ) {
+      $( elem ).css({
+        animationTimingFunction: timingFunction,
+        animationDuration: duration + 'ms',
+        animationDelay: delay + 'ms'
+      });
+    } else if ( name == 'turn' ) {
+      $( elem ).css({
+        transition: 'transform ' + duration + 'ms ' + timingFunction + ' ' + delay + 'ms'
+      });
+    }
   }
 
   // 给定一个值，计算延迟时间
@@ -123,10 +132,11 @@
     this.container = this.parent.imageContainer;
   }
   fn = Turn.transitions.fadeOut.prototype;
-  fn.generateHTML = function () {
+  fn.generateHTML = function ( $container ) {
     var that = this;
     var html = '', allHtml = '';
     var count = +this.parent.options.column[0] * +this.parent.options.column[1];
+    var moduleCount = 0;
     that.parent.images.each(function ( index, img ) {
       var $img = $( img );
       var picUrl = $img.prop('src');
@@ -137,25 +147,39 @@
       }
       if ( index != 0 && index % count === 0 ) {
         allHtml += '<div class="module">' + html + '</div>';
-        html = ""
+        html = "";
+        moduleCount++;
       }
       html += '<div class="' + that.parent.options.imgItem + '"><div class="img img-origin" style="background-image: url(' + picUrl + ')"></div></div>';
     });
     allHtml += '<div class="module">' + html + '</div>';
     that.parent.images.remove();
+    $container.append( allHtml ).addClass('transition-' + this.parent.options.transitions);
+    $container.css('width', ++moduleCount * 100 + '%');
+    this.$modules = $container.find('.module');
     return allHtml;
   }
   fn.next = function () {
-    var module = this.container.find('.module');
+    var that = this;
     var activeClass = 'transition-active';
-    var endClass = 'transition-end';
-    var length = module.length;
-    if ( this.currentIndex >= length ) {
-      this.currentIndex = 0;
-      $( module[ length - 1 ] ).removeClass( activeClass ).addClass( endClass );
+    var length = this.$modules.length;
+    var index = this.currentIndex;
+
+    if ( index === ( length - 1 ) ) {
+      this.currentIndex = -1;
     }
-    $( module[ this.currentIndex - 1 ] ).removeClass( activeClass ).addClass( endClass );
-    $( module[ this.currentIndex++ ] ).addClass( activeClass ).removeClass( endClass );
+
+    var $module = $( this.$modules[ index ] );
+    console.log( index );
+    function handle () {
+      if ( index === ( length - 1 ) ) {
+        index = -1;
+      }
+      that.container.css('transform', 'translateX(' + -(index + 1) * 25 + '%)');
+      $module.removeClass( activeClass ).find('img-item').last().off('webkitAnimationEnd', handle);
+    }
+    $module.addClass( activeClass ).find('.img-item').last().on('webkitAnimationEnd', handle);
+    this.currentIndex++;
   }
 })( window.jQuery || window.Zepto );
 
@@ -168,7 +192,7 @@
   }
   fn = Turn.transitions.turn.prototype;
 
-  fn.generateHTML = function () {
+  fn.generateHTML = function ( $container ) {
     var that = this;
     var html = '';
     that.parent.images.each(function ( index, img ) {
@@ -190,6 +214,7 @@
       '<div class="img img-back" style="background-image: url(' + backPic + ')"></div></div>';
       $img.remove();
     });
+    $container.append( html ).addClass('transition-' + this.parent.options.transitions);
     return html;
   }
 
